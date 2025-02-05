@@ -68,23 +68,38 @@ def read_transactions():
 def generate_report():
     # TODO: Extend the report to show income and expense totals by category.
     # TODO: Add functionality to generate a summary of transactions within a specific date range.
-    income = 0.0
-    expenses = 0.0
+    income_by_category = {}
+    expenses_by_category = {}
+    total_income = 0.0
+    total_expenses = 0.0
+
     with open(DATA_FILE, mode='r') as file:
         reader = csv.reader(file)
         next(reader)  # Skip header
         for row in reader:
+            category = row[1]
             amount = float(row[2])
             if row[0] == 'income':
-                income += amount
+                total_income += amount
+                income_by_category[category] = income_by_category.get(category, 0) + amount
             elif row[0] == 'expense':
-                expenses += amount
-    savings = income - expenses
+                total_expenses += amount
+                expenses_by_category[category] = expenses_by_category.get(category, 0) + amount
 
-    print(f"Total Income: ${income:.2f}")
-    print(f"Total Expenses: ${expenses:.2f}")
+    savings = total_income - total_expenses
+
+    print("\nIncome by Category:")
+    for category, amount in income_by_category.items():
+        print(f"{category}: ${amount:.2f}")
+
+    print("\nExpenses by Category:")
+    for category, amount in expenses_by_category.items():
+        print(f"{category}: ${amount:.2f}")
+
+    print("\nOverall Summary:")
+    print(f"Total Income: ${total_income:.2f}")
+    print(f"Total Expenses: ${total_expenses:.2f}")
     print(f"Savings: ${savings:.2f}")
-
 def export_to_excel_or_pdf():
     # TODO: Provide an option to export the transaction data to a PDF or Excel file.
     df = pd.read_csv(DATA_FILE)
