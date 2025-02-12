@@ -65,9 +65,18 @@ def read_transactions():
         reader = csv.reader(file)
         return list(reader)[1:]  
 
+import pandas as pd
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from datetime import datetime
 def generate_report():
     # TODO: Extend the report to show income and expense totals by category.
     # TODO: Add functionality to generate a summary of transactions within a specific date range.
+    start_date = input("Enter start date (YYYY-MM-DD): ")
+    end_date = input("Enter end date (YYYY-MM-DD): ")
+    start_date = datetime.strptime(start_date, '%Y-%m-%d')
+    end_date = datetime.strptime(end_date, '%Y-%m-%d')
+
     income_by_category = {}
     expenses_by_category = {}
     total_income = 0.0
@@ -77,14 +86,16 @@ def generate_report():
         reader = csv.reader(file)
         next(reader)  # Skip header
         for row in reader:
-            category = row[1]
-            amount = float(row[2])
-            if row[0] == 'income':
-                total_income += amount
-                income_by_category[category] = income_by_category.get(category, 0) + amount
-            elif row[0] == 'expense':
-                total_expenses += amount
-                expenses_by_category[category] = expenses_by_category.get(category, 0) + amount
+            transaction_date = datetime.strptime(row[4], '%Y-%m-%d %H:%M:%S')  # Assuming the date is in this format
+            if start_date <= transaction_date <= end_date:
+                category = row[1]
+                amount = float(row[2])
+                if row[0] == 'income':
+                    total_income += amount
+                    income_by_category[category] = income_by_category.get(category, 0) + amount
+                elif row[0] == 'expense':
+                    total_expenses += amount
+                    expenses_by_category[category] = expenses_by_category.get(category, 0) + amount
 
     savings = total_income - total_expenses
 
@@ -101,7 +112,6 @@ def generate_report():
     print(f"Total Expenses: ${total_expenses:.2f}")
     print(f"Savings: ${savings:.2f}")
 def export_to_excel_or_pdf():
-    # TODO: Provide an option to export the transaction data to a PDF or Excel file.
     df = pd.read_csv(DATA_FILE)
     print("1. Export to Excel")
     print("2. Export to PDF")
@@ -128,7 +138,6 @@ def export_to_excel_or_pdf():
         print("Data exported to budget_data.pdf")
     else:
         print("Invalid choice.")
-    pass
 
 def search_transactions():
     # TODO: Allow users to search for transactions by category, type, or description.
