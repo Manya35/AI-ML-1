@@ -161,38 +161,38 @@ def main():
             transaction_type = input("Enter transaction type (income/expense): ")
             category = input("Enter category: ")
             amount = input("Enter amount: ")
-            description = input("Enter description (optional): ") or "No description"  # TODO: Handle optional descriptions.
+            description = input("Enter description (optional): ").strip() or "No description"  # Handle optional descriptions
             add_transaction(transaction_type, category, amount, description)
         elif choice == '2':
-            total=read_transactions()
-            if(len(total)==0):
-                print("no transactions made yet..please add transactions first")
+            total = read_transactions()
+            if len(total) == 0:
+                print("No transactions made yet. Please add transactions first.")
                 continue
             else:
-                 while True:
-                     index = int(input("Enter transaction index to update: "))   # TODO: Use a validated index.
-                     if(index>=0 and index<len(total)):
-                         break
-                     else:
-                         print("Invalid index..please enter valid index")
+                while True:
+                    index = int(input("Enter transaction index to update: "))  # TODO: Use a validated index.
+                    if index >= 0 and index < len(total):
+                        break
+                    else:
+                        print("Invalid index. Please enter a valid index.")
 
             transaction_type = input("Enter transaction type (income/expense): ")
             category = input("Enter category: ")
             amount = input("Enter amount: ")
-            description = input("Enter description (optional): ") 
+            description = input("Enter description (optional): ").strip() or "No description"  # Handle optional descriptions
             update_transaction(index, transaction_type, category, amount, description)
         elif choice == '3':
-            total=read_transactions()
-            if(len(total)==0):
-                print("no transactions to delete..please first add transactions")
+            total = read_transactions()
+            if len(total) == 0:
+                print("No transactions to delete. Please first add transactions.")
                 continue
             else:
                 while True:
-                    index = int(input("Enter transaction index to delete: "))    # TODO: Use a validated index.
-                    if index>=0 and index<len(total):
+                    index = int(input("Enter transaction index to delete: "))  # TODO: Use a validated index.
+                    if index >= 0 and index < len(total):
                         break
                     else:
-                        print("invalid index...please enter again")
+                        print("Invalid index. Please enter again.")
                 delete_transaction(index)
         elif choice == '4':
             generate_report()
@@ -206,6 +206,3 @@ def main():
             break
         else:
             print("Invalid choice. Please try again.")
-
-if __name__ == "__main__":
-    main()
