@@ -5,7 +5,12 @@ import pandas as pd
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
+import shutil
+from datetime import datetime
+
 DATA_FILE = 'budget_data.csv'
+
+BACKUP_FILE = 'budget_data_backup.csv'
 
 def initialize_data_file():
     if not os.path.exists(DATA_FILE):
@@ -134,8 +139,19 @@ def search_transactions():
     # TODO: Allow users to search for transactions by category, type, or description.
     pass
 
-def undo_last_action():
     # TODO: Implement an "Undo" feature to revert the most recent addition, update, or deletion of a transaction.
+def backup_data_file():
+    """Creates a backup of the data file before modification."""
+    if os.path.exists(DATA_FILE):
+        shutil.copy(DATA_FILE, BACKUP_FILE)
+    
+def undo_last_action():
+    """Restores the last saved state from the backup file."""
+    if os.path.exists(BACKUP_FILE):
+        shutil.copy(BACKUP_FILE, DATA_FILE)
+        print("Last action undone successfully.")
+    else:
+        print("No previous state available to undo.")
     pass
 
 def clear_screen():
