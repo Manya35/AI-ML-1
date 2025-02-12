@@ -3,7 +3,36 @@ from tkinter import messagebox
 from time import time
 
 # TODO: Implement the ability to load puzzles from a file.
+from tkinter import filedialog
+
+def load_puzzle():
+    """Load a Sudoku puzzle from a file."""
+    file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt")])
+    if not file_path:
+        return
+    
+    with open(file_path, "r") as file:
+        lines = file.readlines()
+    
+    for r in range(min(6, len(lines))):
+        values = lines[r].strip().split()
+        for c in range(min(6, len(values))):
+            entries[r][c].delete(0, tk.END)
+            if values[c].isdigit():
+                entries[r][c].insert(0, values[c])
+
 # TODO: Implement the ability to save solutions to a file.
+def save_solution():
+    """Save the solved Sudoku puzzle to a file."""
+    file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt")])
+    if not file_path:
+        return
+    
+    board = [[entries[r][c].get() for c in range(6)] for r in range(6)]
+    with open(file_path, "w") as file:
+        for row in board:
+            file.write(" ".join(row) + "\n")
+
 
 def is_valid(board, row, col, num):
     """Checks if placing num in board[row][col] is valid."""
