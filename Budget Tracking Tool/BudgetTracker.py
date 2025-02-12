@@ -13,14 +13,20 @@ def initialize_data_file():
             writer = csv.writer(file)
             writer.writerow(['Type', 'Category', 'Amount', 'Description'])  # TODO: Add a timestamp field to the CSV header.
 
-def add_transaction(transaction_type, category, amount, description):
-    # TODO: Validate that the amount is a positive number.
-    if ((type(amount) != float and type(amount) != int) or amount < 0):  #checks if the datatype of amount is not int or float and then checks if entered amount is negative
+from datetime import datetime
+
+def add_transaction(transaction_type, category, amount, description="No description"):
+    if not isinstance(amount, (int, float)) or amount < 0:
         print("Invalid amount")
-    # TODO: Automatically add the current date and time when a transaction is recorded.
+        return
+    
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
     with open(DATA_FILE, mode='a', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow([transaction_type, category, amount, description])
+        writer.writerow([transaction_type, category, amount, description, timestamp])
+    
+    print("Transaction added successfully!")
 
 def update_transaction(index, transaction_type, category, amount, description):
     # TODO: Validate that the provided index is valid.
