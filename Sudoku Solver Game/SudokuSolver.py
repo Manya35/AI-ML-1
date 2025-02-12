@@ -114,6 +114,124 @@ clear_button.grid(row=6, column=3, columnspan=3)
 def show_metrics():
     """Display metrics such as recursion depth or steps taken."""
     # TODO: Implement functionality to track and show recursion depth or steps taken.
+    """
+    Display solving metrics including recursion depth, steps taken, and timing statistics.
+    Requires global variables to track metrics across solving iterations.
+    """
+    class MetricsTracker:
+        def __init__(self):
+            self.current_depth = 0
+            self.max_depth = 0
+            self.steps_taken = 0
+            self.backtracks = 0
+            self.start_time = None
+            self.end_time = None
+            self.attempts_by_number = {i: 0 for i in range(1, 7)}  # For 6x6 grid
+            self.success_rate = 0
+            
+        def reset(self):
+            """Reset all metrics for new solve attempt"""
+            self.__init__()
+            
+        def start_tracking(self):
+            """Start timing the solve attempt"""
+            self.start_time = time()
+            
+        def stop_tracking(self):
+            """Stop timing the solve attempt"""
+            self.end_time = time()
+            
+        def increment_depth(self):
+            """Track recursion depth"""
+            self.current_depth += 1
+            self.max_depth = max(self.max_depth, self.current_depth)
+            
+        def decrement_depth(self):
+            """Track backing out of recursion"""
+            self.current_depth -= 1
+            
+        def record_attempt(self, number):
+            """Record attempt to place a number"""
+            self.steps_taken += 1
+            self.attempts_by_number[number] += 1
+            
+        def record_backtrack(self):
+            """Record a backtrack operation"""
+            self.backtracks += 1
+            
+        def calculate_success_rate(self):
+            """Calculate placement success rate"""
+            total_attempts = sum(self.attempts_by_number.values())
+            successful_placements = self.steps_taken - self.backtracks
+            self.success_rate = (successful_placements / total_attempts * 100) if total_attempts > 0 else 0
+            
+        def get_solving_time(self):
+            """Calculate total solving time"""
+            if self.start_time and self.end_time:
+                return self.end_time - self.start_time
+            return 0
+            
+        def display_metrics(self):
+            """Create and show metrics window"""
+            metrics_window = tk.Toplevel()
+            metrics_window.title("Sudoku Solver Metrics")
+            metrics_window.geometry("400x500")
+            
+            style = ttk.Style()
+            style.configure("Metric.TLabel", padding=5, font=('Arial', 10))
+            
+            # Basic Metrics
+            ttk.Label(metrics_window, text="Solving Metrics", font=('Arial', 14, 'bold')).pack(pady=10)
+            
+            metrics_frame = ttk.Frame(metrics_window)
+            metrics_frame.pack(fill='x', padx=20)
+            
+            metrics = [
+                ("Maximum Recursion Depth:", f"{self.max_depth}"),
+                ("Total Steps Taken:", f"{self.steps_taken}"),
+                ("Number of Backtracks:", f"{self.backtracks}"),
+                ("Success Rate:", f"{self.success_rate:.1f}%"),
+                ("Solving Time:", f"{self.get_solving_time():.3f} seconds")
+            ]
+            
+            for label, value in metrics:
+                frame = ttk.Frame(metrics_frame)
+                frame.pack(fill='x', pady=2)
+                ttk.Label(frame, text=label, style="Metric.TLabel").pack(side='left')
+                ttk.Label(frame, text=value, style="Metric.TLabel").pack(side='right')
+            
+            # Number Attempts Chart
+            ttk.Label(metrics_window, text="\nAttempts by Number", font=('Arial', 12, 'bold')).pack(pady=5)
+            
+            chart_frame = ttk.Frame(metrics_window)
+            chart_frame.pack(fill='x', padx=20)
+            
+            max_attempts = max(self.attempts_by_number.values())
+            bar_width = 30
+            
+            for num, attempts in self.attempts_by_number.items():
+                frame = ttk.Frame(chart_frame)
+                frame.pack(fill='x', pady=2)
+                
+                ttk.Label(frame, text=f"{num}:", width=3).pack(side='left')
+                bar_length = int((attempts / max_attempts) * 200) if max_attempts > 0 else 0
+                canvas = tk.Canvas(frame, width=bar_length + 5, height=20)
+                canvas.pack(side='left')
+                canvas.create_rectangle(0, 5, bar_length, 15, fill='blue')
+                ttk.Label(frame, text=str(attempts)).pack(side='left', padx=5)
+                
+            # Add close button
+            ttk.Button(metrics_window, text="Close", command=metrics_window.destroy).pack(pady=20)
+    
+    # Show metrics if they exist
+    if hasattr(show_metrics, 'tracker') and show_metrics.tracker.steps_taken > 0:
+        show_metrics.tracker.calculate_success_rate()
+        show_metrics.tracker.display_metrics()
+    else:
+        messagebox.showinfo("No Metrics", "No solving metrics available. Please solve a puzzle first.")
+
+# Initialize tracker at module level
+show_metrics.tracker = MetricsTracker()
 
 def provide_hint():
     """Provide a hint for the next move without solving completely."""
