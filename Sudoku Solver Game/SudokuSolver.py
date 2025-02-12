@@ -118,6 +118,143 @@ def show_metrics():
 def provide_hint():
     """Provide a hint for the next move without solving completely."""
     # TODO: Implement hint functionality.
+    """
+    Provides intelligent hints for the next move based on different solving strategies.
+    Orders hints from basic to advanced techniques.
+    """
+    def get_current_board():
+        """Get the current state of the board from GUI"""
+        board = []
+        for r in range(6):
+            row = []
+            for c in range(6):
+                val = entries[r][c].get()
+                try:
+                    row.append(int(val) if val else 0)
+                except ValueError:
+                    messagebox.showerror("Error", "Invalid board values. Please ensure all entries are numbers.")
+                    return None
+            board.append(row)
+        return board
+
+    def find_empty_cells(board):
+        """Find all empty cells in the board"""
+        empty_cells = []
+        for r in range(6):
+            for c in range(6):
+                if board[r][c] == 0:
+                    empty_cells.append((r, c))
+        return empty_cells
+
+    def get_possible_values(board, row, col):
+        """Get all possible values for a given cell"""
+        possible = []
+        for num in range(1, 7):
+            if is_valid(board, row, col, num):
+                possible.append(num)
+        return possible
+
+    def find_single_candidate(board):
+        """Find cells with only one possible value"""
+        empty_cells = find_empty_cells(board)
+        for row, col in empty_cells:
+            possible = get_possible_values(board, row, col)
+            if len(possible) == 1:
+                return (row, col, possible[0], "This cell can only be {}.")
+
+    def find_hidden_single(board):
+        """Find cells where a number can only go in one place in a row/column/box"""
+        # Check rows
+        for row in range(6):
+            for num in range(1, 7):
+                possible_cols = []
+                for col in range(6):
+                    if board[row][col] == 0 and is_valid(board, row, col, num):
+                        possible_cols.append(col)
+                if len(possible_cols) == 1:
+                    return (row, possible_cols[0], num, 
+                           "In this row, {} can only go in this cell.")
+
+        # Check columns
+        for col in range(6):
+            for num in range(1, 7):
+                possible_rows = []
+                for row in range(6):
+                    if board[row][col] == 0 and is_valid(board, row, col, num):
+                        possible_rows.append(row)
+                if len(possible_rows) == 1:
+                    return (possible_rows[0], col, num, 
+                           "In this column, {} can only go in this cell.")
+
+        # Check boxes
+        for box_row in range(2):
+            for box_col in range(3):
+                for num in range(1, 7):
+                    possible_positions = []
+                    for r in range(box_row*2, (box_row+1)*2):
+                        for c in range(box_col*3, (box_col+1)*3):
+                            if board[r][c] == 0 and is_valid(board, r, c, num):
+                                possible_positions.append((r, c))
+                    if len(possible_positions) == 1:
+                        row, col = possible_positions[0]
+                        return (row, col, num, 
+                               "In this 2x3 box, {} can only go in this cell.")
+
+    def highlight_cell(row, col, color='#ffeb3b'):
+        """Highlight the cell being hinted at"""
+        original_color = entries[row][col].cget('bg')
+        entries[row][col].config(bg=color)
+        
+        # Reset color after 2 seconds
+        root.after(2000, lambda: entries[row][col].config(bg=original_color))
+
+    def show_hint_message(message, value):
+        """Show hint message in a mini popup"""
+        hint_window = tk.Toplevel(root)
+        hint_window.title("Hint")
+        hint_window.geometry("300x100")
+        
+        # Position the window near the main window
+        x = root.winfo_x() + root.winfo_width()//2 - 150
+        y = root.winfo_y() + root.winfo_height()//2 - 50
+        hint_window.geometry(f"+{x}+{y}")
+        
+        ttk.Label(hint_window, text=message.format(value), 
+                 wraplength=250, justify='center').pack(pady=20)
+        
+        # Auto-close after 3 seconds
+        root.after(3000, hint_window.destroy)
+
+    # Main hint logic
+    board = get_current_board()
+    if not board:
+        return
+
+    # Try different hint strategies in order of difficulty
+    hint = None
+    
+    # Strategy 1: Look for cells with only one possible value
+    hint = find_single_candidate(board)
+    
+    # Strategy 2: Look for hidden singles if no obvious candidates
+    if not hint:
+        hint = find_hidden_single(board)
+    
+    if hint:
+        row, col, value, message = hint
+        highlight_cell(row, col)
+        show_hint_message(message, value)
+    else:
+        # If no specific hint found, show general helper message
+        empty_cells = find_empty_cells(board)
+        if empty_cells:
+            row, col = empty_cells[0]
+            possible = get_possible_values(board, row, col)
+            highlight_cell(row, col, '#e3f2fd')
+            show_hint_message("Try this cell. Possible values are: {}", 
+                            ", ".join(map(str, possible)))
+        else:
+            messagebox.showinfo("Hint", "The puzzle is already complete!")
 
 # Create the main window
 root = tk.Tk()
