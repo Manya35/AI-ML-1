@@ -160,8 +160,35 @@ def export_to_excel_or_pdf():
         print("Invalid choice.")
 
 def search_transactions():
-    # TODO: Allow users to search for transactions by category, type, or description.
-    pass
+    print("\nSearch by:")
+    print("1. Category")
+    print("2. Type (Income/Expense)")
+    print("3. Description")
+    
+    search_choice = input("Choose a search criterion (1, 2, or 3): ")
+
+    search_term = input("Enter search term: ").lower()
+
+    found_transactions = []
+
+    with open(DATA_FILE, mode='r') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip header
+        for row in reader:
+            if search_choice == '1' and search_term in row[1].lower():  
+                found_transactions.append(row)
+            elif search_choice == '2' and search_term in row[0].lower(): 
+                found_transactions.append(row)
+            elif search_choice == '3' and search_term in row[3].lower(): 
+                found_transactions.append(row)
+
+    if found_transactions:
+        print("\nSearch Results:")
+        for transaction in found_transactions:
+            print(f"Type: {transaction[0]}, Category: {transaction[1]}, Amount: ${transaction[2]}, Description: {transaction[3]}")
+    else:
+        print("No transactions found matching your criteria.")
+pass
 
     # TODO: Implement an "Undo" feature to revert the most recent addition, update, or deletion of a transaction.
 def backup_data_file():
