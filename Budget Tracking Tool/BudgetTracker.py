@@ -17,6 +17,15 @@ def initialize_data_file():
         with open(DATA_FILE, mode='w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(['Type', 'Category', 'Amount', 'Description'])  # TODO: Add a timestamp field to the CSV header.
+import os
+import platform
+
+def clear_screen():
+    system = platform.system()
+    if system == "Windows":
+        os.system("cls")
+    else:
+        os.system("clear")
 
 from datetime import datetime
 
@@ -177,6 +186,7 @@ def main():
     initialize_data_file()
     while True:
         # TODO: Call clear_screen() here for better readability.
+        clear_screen()
         print("\nBudget Tracker")
         print("1. Add Transaction")
         print("2. Update Transaction")
