@@ -34,33 +34,30 @@ def save_solution():
             file.write(" ".join(row) + "\n")
 
 
-def is_valid(board, row, col, num):
+def is_valid(board, row, col, num, grid_size=9):
     """Checks if placing num in board[row][col] is valid."""
-    for c in range(6):
+    # Check row
+    for c in range(grid_size):
         if board[row][c] == num:
             return False
-    for r in range(6):
+
+    # Check column
+    for r in range(grid_size):
         if board[r][col] == num:
             return False
-    start_row = (row // 2) * 2
-    start_col = (col // 3) * 3
-    for r in range(start_row, start_row + 2):
-        for c in range(start_col, start_col + 3):
+
+    # Check subgrid (box)
+    subgrid_size = int(grid_size ** 0.5)  # For 9x9, subgrid_size=3; for 16x16, subgrid_size=4
+    start_row = (row // subgrid_size) * subgrid_size
+    start_col = (col // subgrid_size) * subgrid_size
+    for r in range(start_row, start_row + subgrid_size):
+        for c in range(start_col, start_col + subgrid_size):
             if board[r][c] == num:
                 return False
     return True
 
-def solve_sudoku(board, entries=None, delay=100):
-    """Solves the Sudoku puzzle using backtracking."""
-    # TODO: Show the solving process visually step-by-step.
-    """
-    Solves the Sudoku puzzle using backtracking with visual step-by-step display.
-    
-    Args:
-        board: The 6x6 Sudoku board
-        entries: List of tkinter Entry widgets representing the grid
-        delay: Delay in milliseconds between steps (default 100ms)
-    """
+def solve_sudoku(board, entries=None, delay=100, grid_size=9):
+    """Solves the Sudoku puzzle using backtracking with visual step-by-step display."""
     def update_gui(row, col, num, color):
         """Helper function to update GUI with current attempt"""
         if entries:
@@ -69,32 +66,11 @@ def solve_sudoku(board, entries=None, delay=100):
             entries[row][col].config(bg=color)
             root.update()
             root.after(delay)  # Add delay to make steps visible
-            
-    def is_valid(board, row, col, num):
-        """Checks if placing num in board[row][col] is valid."""
-        # Check row
-        for c in range(6):
-            if board[row][c] == num:
-                return False
-                
-        # Check column
-        for r in range(6):
-            if board[r][col] == num:
-                return False
-                
-        # Check 2x3 box
-        start_row = (row // 2) * 2
-        start_col = (col // 3) * 3
-        for r in range(start_row, start_row + 2):
-            for c in range(start_col, start_col + 3):
-                if board[r][c] == num:
-                    return False
-        return True
 
     # Find empty cell
     empty = None
-    for row in range(6):
-        for col in range(6):
+    for row in range(grid_size):
+        for col in range(grid_size):
             if board[row][col] == 0:
                 empty = (row, col)
                 break
@@ -104,27 +80,27 @@ def solve_sudoku(board, entries=None, delay=100):
     # If no empty cell found, puzzle is solved
     if not empty:
         return True
-        
+
     row, col = empty
-    
-    # Try digits 1-6
-    for num in range(1, 7):
-        if is_valid(board, row, col, num):
+
+    # Try digits 1 to grid_size
+    for num in range(1, grid_size + 1):
+        if is_valid(board, row, col, num, grid_size):
             # Show attempt
             update_gui(row, col, num, '#e6ffe6')  # Light green for attempts
-            
+
             # Place number
             board[row][col] = num
-            
+
             # Recursively solve rest of puzzle
-            if solve_sudoku(board, entries, delay):
+            if solve_sudoku(board, entries, delay, grid_size):
                 update_gui(row, col, num, '#90EE90')  # Green for correct placement
                 return True
-                
+
             # If placement leads to unsolvable puzzle, backtrack
             board[row][col] = 0
             update_gui(row, col, '', '#FFCCCB')  # Light red for backtracking
-            
+
     return False
     
 def get_board():
