@@ -50,21 +50,83 @@ def is_valid(board, row, col, num):
                 return False
     return True
 
-def solve_sudoku(board):
+def solve_sudoku(board, entries=None, delay=100):
     """Solves the Sudoku puzzle using backtracking."""
     # TODO: Show the solving process visually step-by-step.
+    """
+    Solves the Sudoku puzzle using backtracking with visual step-by-step display.
+    
+    Args:
+        board: The 6x6 Sudoku board
+        entries: List of tkinter Entry widgets representing the grid
+        delay: Delay in milliseconds between steps (default 100ms)
+    """
+    def update_gui(row, col, num, color):
+        """Helper function to update GUI with current attempt"""
+        if entries:
+            entries[row][col].delete(0, tk.END)
+            entries[row][col].insert(0, str(num))
+            entries[row][col].config(bg=color)
+            root.update()
+            root.after(delay)  # Add delay to make steps visible
+            
+    def is_valid(board, row, col, num):
+        """Checks if placing num in board[row][col] is valid."""
+        # Check row
+        for c in range(6):
+            if board[row][c] == num:
+                return False
+                
+        # Check column
+        for r in range(6):
+            if board[r][col] == num:
+                return False
+                
+        # Check 2x3 box
+        start_row = (row // 2) * 2
+        start_col = (col // 3) * 3
+        for r in range(start_row, start_row + 2):
+            for c in range(start_col, start_col + 3):
+                if board[r][c] == num:
+                    return False
+        return True
+
+    # Find empty cell
+    empty = None
     for row in range(6):
         for col in range(6):
             if board[row][col] == 0:
-                for num in range(1, 7):
-                    if is_valid(board, row, col, num):
-                        board[row][col] = num
-                        if solve_sudoku(board):
-                            return True
-                        board[row][col] = 0
-                return False
-    return True
+                empty = (row, col)
+                break
+        if empty:
+            break
 
+    # If no empty cell found, puzzle is solved
+    if not empty:
+        return True
+        
+    row, col = empty
+    
+    # Try digits 1-6
+    for num in range(1, 7):
+        if is_valid(board, row, col, num):
+            # Show attempt
+            update_gui(row, col, num, '#e6ffe6')  # Light green for attempts
+            
+            # Place number
+            board[row][col] = num
+            
+            # Recursively solve rest of puzzle
+            if solve_sudoku(board, entries, delay):
+                update_gui(row, col, num, '#90EE90')  # Green for correct placement
+                return True
+                
+            # If placement leads to unsolvable puzzle, backtrack
+            board[row][col] = 0
+            update_gui(row, col, '', '#FFCCCB')  # Light red for backtracking
+            
+    return False
+    
 def get_board():
     """Retrieves the current board from the input fields."""
     board = []
